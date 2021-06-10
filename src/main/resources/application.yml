@@ -1,7 +1,4 @@
 quarkus:
-  swagger-ui:
-    path: "/docs"
-    always-include: true
   http:
     port: 53205
 
