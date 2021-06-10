@@ -1,0 +1,16 @@
+quarkus:
+  swagger-ui:
+    path: "/docs"
+    always-include: true
+  http:
+    port: 53205
+
+"%dev":
+  quarkus:
+    log:
+      console:
+        level: INFO
+      min-level: DEBUG
+      category:
+        "at.auu.se2":
+          level: DEBUG
