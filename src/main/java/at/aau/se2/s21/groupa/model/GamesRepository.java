@@ -1,5 +1,8 @@
 package at.aau.se2.s21.groupa.model;
 
+import at.aau.se2.s21.groupa.api.SimpleGameDataDispatcher;
+import org.jboss.logging.Logger;
+
 import javax.inject.Singleton;
 import javax.ws.rs.NotFoundException;
 import java.util.LinkedList;
@@ -11,6 +14,7 @@ import java.util.stream.Collectors;
 
 @Singleton
 public class GamesRepository {
+    static final Logger LOG = Logger.getLogger(GamesRepository.class);
 
     ConcurrentMap<String, Game> games = new ConcurrentHashMap<>();
     ConcurrentMap<String, Game> userGames = new ConcurrentHashMap<>();
@@ -19,6 +23,7 @@ public class GamesRepository {
         Game g = new Game(owner);
         games.put(g.id, g);
         userGames.put(owner, g);
+        LOG.infof("user %s created game %s", owner, g.id);
         return g;
     }
 
@@ -26,12 +31,14 @@ public class GamesRepository {
         return new LinkedList<>(games.values());
     }
 
-    public void join(String id, String userId) {
+    public Game join(String id, String userId) {
         Game g = games.get(id);
         if(g == null)
             throw new NotFoundException("id=" + id);
-        g.guestUserIds.add(userId);
+        g.join(userId);
         userGames.put(userId, g);
+        LOG.infof("user %s joined game %s", userId, id);
+        return g;
     }
 
     public Game get(String id) {
@@ -51,5 +58,6 @@ public class GamesRepository {
     public void remove(Game g) {
         userGames.remove(g.hostUserId);
         games.remove(g.id);
+        LOG.infof("removed game %s", g.id);
     }
 }

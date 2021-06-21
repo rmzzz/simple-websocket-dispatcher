@@ -104,19 +104,18 @@ public class SimpleGameDataDispatcher {
                 case 102:
                     // join game
                     String gId = incomingMessage.data.payload;
-                    g = games.get(gId);
-                    g.join(userId);
+                    g = games.join(gId, userId);
                     // notify host only!
                     sendMessage(g.hostUserId, userId, new Payload(102, sessions.getName(userId)));
                     break;
                 default:
-                    LOG.warnf("Unknown system command: %s", msg);
+                    LOG.warnf("Unknown system command from %s: %s", userId, msg);
             }
         } else {
             // dispatch to other
             Game g = games.findByUserId(userId);
             if (g == null)
-                throw new NotFoundException("Not joined any game. user: " + userId);
+                throw new NotFoundException("Not joined any game. user: " + userId + "; message: " + msg);
 
             if (g.hostUserId.equals(userId)) {
                 // broadcast

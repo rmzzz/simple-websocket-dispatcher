@@ -1,5 +1,5 @@
 #!/bin/bash
 
-export JAVA_OPTS=-Xmx256m
+export JAVA_OPTIONS="-Xmx256m -Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
 
-java -jar quarkus-app/quarkus-run.jar
+nohup java $JAVA_OPTIONS -jar quarkus-app/quarkus-run.jar &
