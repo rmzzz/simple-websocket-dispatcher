@@ -35,6 +35,11 @@ public class GamesRepository {
         Game g = games.get(id);
         if(g == null)
             throw new NotFoundException("id=" + id);
+//        if(!g.hasUser(userId)) {
+//            LOG.infof("user %s already joined game %s", userId, id);
+//            return null;
+//        }
+
         g.join(userId);
         userGames.put(userId, g);
         LOG.infof("user %s joined game %s", userId, id);

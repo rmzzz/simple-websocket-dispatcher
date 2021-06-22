@@ -19,6 +19,8 @@ import javax.websocket.Session;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import javax.ws.rs.NotFoundException;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.stream.Stream;
 
 @ServerEndpoint("/game/{userId}")
@@ -56,7 +58,7 @@ public class SimpleGameDataDispatcher {
             } else if (g.hostUserId.equals(userId)) {
                 // host is gone -> eliminate the game!
                 games.remove(g);
-                g.guestUserIds.forEach(u -> {
+                g.guests().forEach(u -> {
                     Session s = sessions.get(u);
                     if (s != null && s.isOpen()) {
                         try {
@@ -73,7 +75,7 @@ public class SimpleGameDataDispatcher {
     @OnError
     public void onError(Session session, @PathParam("userId") String userId, Throwable throwable) {
         //sessions.remove(username);
-        LOG.errorf(throwable, "Error from %s", userId);
+        LOG.errorf(throwable, "Error from %s: %s", userId, throwable.getMessage());
     }
 
 
@@ -120,7 +122,8 @@ public class SimpleGameDataDispatcher {
             if (g.hostUserId.equals(userId)) {
                 // broadcast
                 Stream.of(incomingMessage.to)
-                        .filter(g.guestUserIds::contains)
+                        .distinct()
+                        .filter(g::hasUser)
                         .forEach(u -> sendMessage(u, userId, incomingMessage.data));
             } else {
                 // end to owner only
@@ -132,7 +135,7 @@ public class SimpleGameDataDispatcher {
     void sendMessage(String to, String from, Payload payload) {
         Session s = sessions.get(to);
         if (s == null) {
-            LOG.error("Error sending message to " + to);
+            LOG.errorf("Error sending message to %s: no session found!", to);
             return;
         }
         String msg = jsonb.toJson(
